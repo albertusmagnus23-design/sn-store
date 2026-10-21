@@ -8,8 +8,18 @@ Route::get('/', function () {
 })->name('home');
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    return view('pages.admin.dashboard.index');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/categories', function () {
+        return view('pages.admin.categories.index');
+    })->name('categories.index');
+
+    Route::get('/categories/create', function () {
+        return view('pages.admin.categories.create');
+    })->name('categories.create');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

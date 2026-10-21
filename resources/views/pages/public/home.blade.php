@@ -166,7 +166,12 @@
                 </form>
 
                 <div class="hidden items-center gap-3 lg:flex">
-                    <a href="{{ route('login') }}" class="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">Masuk</a>
+                    @auth
+                        <a href="{{ route('dashboard') }}" class="rounded-full bg-rose-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-800">Dashboard</a>
+                    @else
+                        <a href="{{ route('login') }}" class="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">Login</a>
+                        <a href="{{ route('register') }}" class="rounded-full bg-rose-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-800">Daftar</a>
+                    @endauth
                     <a href="#cart" aria-label="Keranjang belanja" class="relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-700 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700">
                         <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l2.4 12.2a2 2 0 0 0 2 1.6h8.8a2 2 0 0 0 2-1.6L22 8H6" />
@@ -219,7 +224,12 @@
                             <a href="#products" @click="menuOpen = false; categoriesOpen = false" class="rounded-lg px-3 py-2 text-sm text-slate-500 hover:bg-rose-50 hover:text-rose-700">Aksesori</a>
                         </div>
                     </div>
-                    <a href="{{ route('login') }}" class="rounded-xl px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50">Masuk ke akun</a>
+                    @auth
+                        <a href="{{ route('dashboard') }}" class="rounded-xl bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700 hover:bg-rose-100">Dashboard</a>
+                    @else
+                        <a href="{{ route('login') }}" class="rounded-xl px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50">Login</a>
+                        <a href="{{ route('register') }}" class="rounded-xl bg-rose-700 px-4 py-3 text-sm font-semibold text-white hover:bg-rose-800">Daftar</a>
+                    @endauth
                 </div>
             </div>
         </header>
