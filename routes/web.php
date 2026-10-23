@@ -19,6 +19,18 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::get('/categories/create', function () {
         return view('pages.admin.categories.create');
     })->name('categories.create');
+
+    Route::get('/products', function () {
+        return view('pages.admin.products.index');
+    })->name('products.index');
+
+    Route::get('/transactions', function () {
+        return view('pages.admin.transactions.index');
+    })->name('transactions.index');
+
+    Route::get('/users', function () {
+        return view('pages.admin.users.index');
+    })->name('users.index');
 });
 
 Route::middleware('auth')->group(function () {

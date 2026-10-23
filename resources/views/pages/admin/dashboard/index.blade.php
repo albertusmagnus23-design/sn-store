@@ -50,7 +50,7 @@
                     <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                         <path fill-rule="evenodd" d="M10 2a.75.75 0 0 1 .75.75v6.5h6.5a.75.75 0 0 1 0 1.5h-6.5v6.5a.75.75 0 0 1-1.5 0v-6.5h-6.5a.75.75 0 0 1 0-1.5h6.5v-6.5A.75.75 0 0 1 10 2Z" clip-rule="evenodd" />
                     </svg>
-                    2 dari 5 halaman tersedia
+                    5 dari 5 halaman tersedia
                 </span>
             </div>
 
@@ -68,44 +68,44 @@
                     <p class="mt-1.5 text-sm leading-5 text-slate-500">Kelompokkan produk agar lebih mudah ditemukan pelanggan.</p>
                 </a>
 
-                <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-900/[0.02]">
+                <a href="{{ route('admin.products.index') }}" class="block rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-900/[0.02] transition hover:-translate-y-0.5 hover:border-rose-200 hover:shadow-md">
                     <div class="flex items-start justify-between gap-3">
                         <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-rose-50 text-rose-700">
                             <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m4.75 7.25 7.25-3.5 7.25 3.5v9.5L12 20.25l-7.25-3.5zM4.75 7.25 12 11l7.25-3.75M12 11v9.25M8.25 5.5l7.5 3.75" />
                             </svg>
                         </span>
-                        <span class="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-500">Segera hadir</span>
+                        <span class="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-emerald-700">Aktif</span>
                     </div>
                     <h3 class="mt-5 text-base font-bold text-slate-900">Produk</h3>
                     <p class="mt-1.5 text-sm leading-5 text-slate-500">Atur katalog, harga, stok, dan informasi produk toko.</p>
-                </article>
+                </a>
 
-                <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-900/[0.02]">
+                <a href="{{ route('admin.transactions.index') }}" class="block rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-900/[0.02] transition hover:-translate-y-0.5 hover:border-rose-200 hover:shadow-md">
                     <div class="flex items-start justify-between gap-3">
                         <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-amber-700">
                             <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 5.25h16.5v13.5H3.75zM3.75 9h16.5M8.25 14.25h3.5" />
                             </svg>
                         </span>
-                        <span class="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-500">Segera hadir</span>
+                        <span class="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-emerald-700">Aktif</span>
                     </div>
                     <h3 class="mt-5 text-base font-bold text-slate-900">Transaksi</h3>
                     <p class="mt-1.5 text-sm leading-5 text-slate-500">Pantau pesanan pelanggan dan status pembayaran.</p>
-                </article>
+                </a>
 
-                <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-900/[0.02]">
+                <a href="{{ route('admin.users.index') }}" class="block rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-900/[0.02] transition hover:-translate-y-0.5 hover:border-rose-200 hover:shadow-md">
                     <div class="flex items-start justify-between gap-3">
                         <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-50 text-sky-700">
                             <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 7.5a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.5 20.25a7.5 7.5 0 0 1 15 0" />
                             </svg>
                         </span>
-                        <span class="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-500">Segera hadir</span>
+                        <span class="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-emerald-700">Aktif</span>
                     </div>
                     <h3 class="mt-5 text-base font-bold text-slate-900">User</h3>
                     <p class="mt-1.5 text-sm leading-5 text-slate-500">Kelola akun dan akses pengguna pada toko.</p>
-                </article>
+                </a>
             </div>
         </section>
 
