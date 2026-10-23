@@ -9,9 +9,9 @@ Route::get('/', function () {
 
 Route::get('/dashboard', function () {
     return view('pages.admin.dashboard.index');
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth', 'admin', 'verified'])->name('dashboard');
 
-Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'admin', 'verified'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/categories', function () {
         return view('pages.admin.categories.index');
     })->name('categories.index');

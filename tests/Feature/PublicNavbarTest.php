@@ -11,7 +11,8 @@ it('shows login and registration links to guests in the public navigation', func
         ->assertSee('Daftar')
         ->assertSee(route('login'))
         ->assertSee(route('register'))
-        ->assertDontSee('Dashboard');
+        ->assertDontSee('Dashboard')
+        ->assertDontSee(route('logout'));
 });
 
 it('shows a dashboard link to authenticated users in the public navigation', function () {
@@ -23,6 +24,9 @@ it('shows a dashboard link to authenticated users in the public navigation', fun
         ->assertOk()
         ->assertSee('Dashboard')
         ->assertSee(route('dashboard'))
+        ->assertSee('Logout')
+        ->assertSee('action="'.route('logout').'"', false)
         ->assertDontSee('Login')
-        ->assertDontSee('Daftar');
+        ->assertDontSee('Daftar')
+        ->assertDontSee(route('register'));
 });

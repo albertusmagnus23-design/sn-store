@@ -1,9 +1,12 @@
 <?php
 
 use App\Models\User;
+use Database\Seeders\RolesSeeder;
 
 it('renders sample categories for a verified admin and marks the category menu active', function () {
+    $this->seed(RolesSeeder::class);
     $user = User::factory()->create();
+    $user->assignRole('admin');
 
     $response = $this->actingAs($user)->get(route('admin.categories.index'));
 
@@ -34,7 +37,9 @@ it('redirects guests to login when they request admin categories', function () {
 });
 
 it('renders the demo category form without saving data', function () {
+    $this->seed(RolesSeeder::class);
     $user = User::factory()->create();
+    $user->assignRole('admin');
 
     $response = $this->actingAs($user)->get(route('admin.categories.create'));
 

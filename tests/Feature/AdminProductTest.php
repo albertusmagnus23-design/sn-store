@@ -1,9 +1,12 @@
 <?php
 
 use App\Models\User;
+use Database\Seeders\RolesSeeder;
 
 it('renders sample products and marks the product menu active for a verified admin', function () {
+    $this->seed(RolesSeeder::class);
     $user = User::factory()->create();
+    $user->assignRole('admin');
 
     $response = $this->actingAs($user)->get(route('admin.products.index'));
 

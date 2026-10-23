@@ -168,6 +168,10 @@
                 <div class="hidden items-center gap-3 lg:flex">
                     @auth
                         <a href="{{ route('dashboard') }}" class="rounded-full bg-rose-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-800">Dashboard</a>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="rounded-full border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700">Logout</button>
+                        </form>
                     @else
                         <a href="{{ route('login') }}" class="rounded-full px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">Login</a>
                         <a href="{{ route('register') }}" class="rounded-full bg-rose-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-800">Daftar</a>
@@ -226,6 +230,10 @@
                     </div>
                     @auth
                         <a href="{{ route('dashboard') }}" class="rounded-xl bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700 hover:bg-rose-100">Dashboard</a>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="w-full rounded-xl px-4 py-3 text-left text-sm font-medium text-slate-600 hover:bg-slate-50">Logout</button>
+                        </form>
                     @else
                         <a href="{{ route('login') }}" class="rounded-xl px-4 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50">Login</a>
                         <a href="{{ route('register') }}" class="rounded-xl bg-rose-700 px-4 py-3 text-sm font-semibold text-white hover:bg-rose-800">Daftar</a>
