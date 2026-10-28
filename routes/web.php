@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -12,13 +13,7 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'admin', 'verified'])->name('dashboard');
 
 Route::middleware(['auth', 'admin', 'verified'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/categories', function () {
-        return view('pages.admin.categories.index');
-    })->name('categories.index');
-
-    Route::get('/categories/create', function () {
-        return view('pages.admin.categories.create');
-    })->name('categories.create');
+    Route::resource('categories', CategoryController::class)->except(['show']);
 
     Route::get('/products', function () {
         return view('pages.admin.products.index');
