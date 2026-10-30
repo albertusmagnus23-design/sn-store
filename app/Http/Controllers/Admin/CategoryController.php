@@ -55,7 +55,11 @@ class CategoryController extends Controller
 
     public function destroy(Category $category): RedirectResponse
     {
-        $this->categoryService->delete($category);
+        if (! $this->categoryService->delete($category)) {
+            return redirect()
+                ->route('admin.categories.index')
+                ->with('error', 'Kategori tidak dapat dihapus karena masih digunakan oleh produk.');
+        }
 
         return redirect()
             ->route('admin.categories.index')

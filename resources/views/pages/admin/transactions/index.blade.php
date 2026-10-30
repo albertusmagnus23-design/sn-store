@@ -3,81 +3,6 @@
 @section('title', 'Transaksi')
 @section('breadcrumb', 'Transaksi')
 
-@php
-    $transactions = [
-        [
-            'code' => 'TRX-2026-1024',
-            'customer' => 'Andi Pratama',
-            'initials' => 'AP',
-            'date' => '23 Okt 2026, 10:42',
-            'items' => 'Nova X Pro 256GB',
-            'quantity' => 1,
-            'total' => 'Rp 12.499.000',
-            'payment' => 'Dibayar',
-            'order' => 'Diproses',
-        ],
-        [
-            'code' => 'TRX-2026-1023',
-            'customer' => 'Nadia Putri',
-            'initials' => 'NP',
-            'date' => '23 Okt 2026, 09:18',
-            'items' => 'Studio Headphones S2',
-            'quantity' => 2,
-            'total' => 'Rp 5.598.000',
-            'payment' => 'Dibayar',
-            'order' => 'Dikirim',
-        ],
-        [
-            'code' => 'TRX-2026-1022',
-            'customer' => 'Bima Saputra',
-            'initials' => 'BS',
-            'date' => '22 Okt 2026, 16:35',
-            'items' => 'AeroBook 14 Ultra',
-            'quantity' => 1,
-            'total' => 'Rp 18.999.000',
-            'payment' => 'Menunggu pembayaran',
-            'order' => 'Menunggu',
-        ],
-        [
-            'code' => 'TRX-2026-1021',
-            'customer' => 'Siti Rahma',
-            'initials' => 'SR',
-            'date' => '22 Okt 2026, 14:07',
-            'items' => 'Pulse Watch Active',
-            'quantity' => 1,
-            'total' => 'Rp 3.249.000',
-            'payment' => 'Dibayar',
-            'order' => 'Selesai',
-        ],
-        [
-            'code' => 'TRX-2026-1020',
-            'customer' => 'Rizky Maulana',
-            'initials' => 'RM',
-            'date' => '21 Okt 2026, 11:52',
-            'items' => 'Nova X Lite 128GB',
-            'quantity' => 1,
-            'total' => 'Rp 5.799.000',
-            'payment' => 'Dibayar',
-            'order' => 'Diproses',
-        ],
-        [
-            'code' => 'TRX-2026-1019',
-            'customer' => 'Dewi Anggraini',
-            'initials' => 'DA',
-            'date' => '20 Okt 2026, 18:21',
-            'items' => 'ViewPro 27 4K',
-            'quantity' => 1,
-            'total' => 'Rp 6.899.000',
-            'payment' => 'Dibatalkan',
-            'order' => 'Dibatalkan',
-        ],
-    ];
-
-    $paidTransactions = collect($transactions)->where('payment', 'Dibayar')->count();
-    $pendingTransactions = collect($transactions)->where('payment', 'Menunggu pembayaran')->count();
-    $completedRevenue = 27145000;
-@endphp
-
 @section('content')
     <div class="space-y-8">
         <div class="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
@@ -90,7 +15,7 @@
                 <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                     <path fill-rule="evenodd" d="M10 2a.75.75 0 0 1 .75.75v6.5h6.5a.75.75 0 0 1 0 1.5h-6.5v6.5a.75.75 0 0 1-1.5 0v-6.5h-6.5a.75.75 0 0 1 0-1.5h6.5v-6.5A.75.75 0 0 1 10 2Z" clip-rule="evenodd" />
                 </svg>
-                Data contoh
+                Data pesanan terbaru
             </span>
         </div>
 
@@ -98,7 +23,7 @@
             <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-900/[0.02]">
                 <p class="text-sm font-medium text-slate-500">Total transaksi</p>
                 <div class="mt-2 flex items-end justify-between gap-3">
-                    <p class="text-3xl font-extrabold tracking-tight text-slate-950">{{ count($transactions) }}</p>
+                    <p class="text-3xl font-extrabold tracking-tight text-slate-950">{{ $totalTransactions }}</p>
                     <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-rose-700">
                         <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 5.25h16.5v13.5H3.75zM3.75 9h16.5M8.25 14.25h3.5" />
@@ -151,7 +76,7 @@
                     <p class="mt-1 text-sm text-slate-500">Transaksi terbaru dari pelanggan.</p>
                 </div>
                 <span class="inline-flex w-fit items-center rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600">
-                    {{ count($transactions) }} transaksi
+                    {{ $transactions->total() }} transaksi
                 </span>
             </div>
 
@@ -169,33 +94,35 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
-                        @foreach ($transactions as $transaction)
+                        @forelse ($transactions as $transaction)
                             <tr class="transition hover:bg-slate-50/70">
                                 <th scope="row" class="whitespace-nowrap px-6 py-4">
-                                    <span class="block text-sm font-bold text-slate-800">{{ $transaction['code'] }}</span>
-                                    <span class="mt-1 block text-xs font-normal text-slate-500">{{ $transaction['quantity'] }} item</span>
+                                    <span class="block text-sm font-bold text-slate-800">{{ $transaction->order_number }}</span>
+                                    <span class="mt-1 block text-xs font-normal text-slate-500">{{ $transaction->items->sum('quantity') }} item</span>
                                 </th>
                                 <td class="px-6 py-4">
-                                    <div class="flex items-center gap-2.5">
-                                        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-rose-50 text-xs font-bold text-rose-700">{{ $transaction['initials'] }}</span>
-                                        <span class="whitespace-nowrap text-sm font-medium text-slate-700">{{ $transaction['customer'] }}</span>
-                                    </div>
+                                    <span class="whitespace-nowrap text-sm font-medium text-slate-700">{{ $transaction->customer_name }}</span>
                                 </td>
                                 <td class="max-w-56 px-6 py-4">
-                                    <span class="block truncate text-sm text-slate-700">{{ $transaction['items'] }}</span>
+                                    <span class="block truncate text-sm text-slate-700">{{ $transaction->items->pluck('product_name')->join(', ') }}</span>
                                 </td>
-                                <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-500">{{ $transaction['date'] }}</td>
-                                <td class="whitespace-nowrap px-6 py-4 text-sm font-semibold text-slate-800">{{ $transaction['total'] }}</td>
+                                <td class="whitespace-nowrap px-6 py-4 text-sm text-slate-500">{{ $transaction->created_at->format('d M Y, H:i') }}</td>
+                                <td class="whitespace-nowrap px-6 py-4 text-sm font-semibold text-slate-800">Rp {{ number_format((float) $transaction->total, 0, ',', '.') }}</td>
                                 <td class="px-6 py-4">
-                                    @if ($transaction['payment'] === 'Dibayar')
+                                    @if ($transaction->status === 'paid')
                                         <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
                                             <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
                                             Dibayar
                                         </span>
-                                    @elseif ($transaction['payment'] === 'Menunggu pembayaran')
+                                    @elseif ($transaction->status === 'pending')
                                         <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
                                             <span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
                                             Menunggu
+                                        </span>
+                                    @elseif ($transaction->status === 'failed')
+                                        <span class="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700">
+                                            <span class="h-1.5 w-1.5 rounded-full bg-rose-500"></span>
+                                            Gagal
                                         </span>
                                     @else
                                         <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
@@ -205,27 +132,29 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4">
-                                    @if ($transaction['order'] === 'Selesai')
-                                        <span class="inline-flex rounded-full bg-sky-50 px-2.5 py-1 text-xs font-semibold text-sky-700">Selesai</span>
-                                    @elseif ($transaction['order'] === 'Dikirim')
-                                        <span class="inline-flex rounded-full bg-violet-50 px-2.5 py-1 text-xs font-semibold text-violet-700">Dikirim</span>
-                                    @elseif ($transaction['order'] === 'Diproses')
+                                    @if ($transaction->status === 'paid')
                                         <span class="inline-flex rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700">Diproses</span>
-                                    @elseif ($transaction['order'] === 'Menunggu')
+                                    @elseif ($transaction->status === 'pending')
                                         <span class="inline-flex rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">Menunggu</span>
+                                    @elseif ($transaction->status === 'failed')
+                                        <span class="inline-flex rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700">Gagal</span>
                                     @else
                                         <span class="inline-flex rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700">Dibatalkan</span>
                                     @endif
                                 </td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="7" class="px-6 py-12 text-center text-sm text-slate-500">Belum ada transaksi.</td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
 
             <div class="flex flex-col gap-2 border-t border-slate-100 bg-slate-50/60 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-                <p class="text-xs leading-5 text-slate-500">Data transaksi ini hanya contoh dan belum terhubung ke basis data.</p>
-                <p class="text-xs font-medium text-slate-500">Menampilkan {{ count($transactions) }} transaksi</p>
+                <p class="text-xs leading-5 text-slate-500">Daftar pesanan tersimpan di basis data.</p>
+                <div class="text-xs font-medium text-slate-500">{{ $transactions->links() }}</div>
             </div>
         </section>
     </div>

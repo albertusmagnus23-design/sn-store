@@ -15,10 +15,14 @@ document.addEventListener('submit', async (event) => {
 
     event.preventDefault();
 
+    const resource = form.dataset.confirmResource ?? 'kategori';
+    const name = form.dataset.confirmName ?? form.dataset.categoryName ?? 'item ini';
+    const capitalizedResource = resource.charAt(0).toUpperCase() + resource.slice(1);
+
     const result = await Swal.fire({
         icon: 'warning',
-        title: 'Hapus kategori?',
-        text: `Kategori "${form.dataset.categoryName}" akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.`,
+        title: `Hapus ${resource}?`,
+        text: `${capitalizedResource} "${name}" akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.`,
         showCancelButton: true,
         confirmButtonText: 'Ya, hapus',
         cancelButtonText: 'Batal',

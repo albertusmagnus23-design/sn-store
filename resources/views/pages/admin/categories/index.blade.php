@@ -10,6 +10,11 @@
                 {{ session('status') }}
             </div>
         @endif
+        @if (session('error'))
+            <div role="alert" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800">
+                {{ session('error') }}
+            </div>
+        @endif
 
         <div class="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
             <div>
@@ -134,7 +139,7 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="m16.5 5.25 2.25 2.25M4.5 19.5l4.75-.95L19 8.8a2.12 2.12 0 0 0-3-3L6.25 15.5 5.3 20.25" />
                                             </svg>
                                         </a>
-                                        <form method="POST" action="{{ route('admin.categories.destroy', $category) }}" data-confirm-delete data-category-name="{{ $category->name }}">
+                                        <form method="POST" action="{{ route('admin.categories.destroy', $category) }}" data-confirm-delete data-confirm-resource="kategori" data-category-name="{{ $category->name }}">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" title="Hapus kategori" aria-label="Hapus kategori {{ $category->name }}" class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-rose-200 hover:text-rose-700">

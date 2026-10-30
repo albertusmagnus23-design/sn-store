@@ -42,8 +42,12 @@ class CategoryService
         $category->update($attributes);
     }
 
-    public function delete(Category $category): void
+    public function delete(Category $category): bool
     {
-        $category->delete();
+        if ($category->products()->exists()) {
+            return false;
+        }
+
+        return (bool) $category->delete();
     }
 }

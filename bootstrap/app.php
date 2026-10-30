@@ -16,6 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->validateCsrfTokens(except: [
+            'midtrans/notifications',
+        ]);
+
         $middleware->alias([
             'admin' => EnsureUserIsAdmin::class,
             'role' => RoleMiddleware::class,

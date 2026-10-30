@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Category;
+use App\Models\Product;
 use App\Models\User;
 use Database\Seeders\RolesSeeder;
 
@@ -42,7 +43,7 @@ it('renders categories from the database for a verified admin', function () {
         ->assertSee(route('admin.categories.create'))
         ->assertSee('aria-label="Edit kategori Kategori Aktif"', false)
         ->assertSee('aria-label="Hapus kategori Kategori Aktif"', false)
-        ->assertSee('data-confirm-delete data-category-name="Kategori Aktif"', false)
+        ->assertSee('data-confirm-delete data-confirm-resource="kategori" data-category-name="Kategori Aktif"', false)
         ->assertDontSee('onsubmit="return confirm(', false)
         ->assertDontSee('Smartphone')
         ->assertSee('aria-current="page"', false)
@@ -234,6 +235,22 @@ it('deletes a category', function () {
         ->assertRedirect(route('admin.categories.index'))
         ->assertSessionHas('status', 'Kategori berhasil dihapus.');
     $this->assertDatabaseMissing('categories', ['id' => $category->id]);
+});
+
+it('prevents deleting a category that is assigned to products', function () {
+    $this->seed(RolesSeeder::class);
+    $user = User::factory()->create();
+    $user->assignRole('admin');
+    $category = Category::factory()->create(['name' => 'Audio']);
+    Product::factory()->for($category)->create();
+
+    $response = $this->actingAs($user)
+        ->delete(route('admin.categories.destroy', $category));
+
+    $response
+        ->assertRedirect(route('admin.categories.index'))
+        ->assertSessionHas('error', 'Kategori tidak dapat dihapus karena masih digunakan oleh produk.');
+    $this->assertModelExists($category);
 });
 
 it('does not allow guests to create categories', function () {
