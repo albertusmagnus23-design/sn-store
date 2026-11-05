@@ -16,14 +16,32 @@
                 <div role="status" class="mb-6 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">{{ session('status') }}</div>
             @endif
             <section class="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
-                <p class="text-xs font-bold uppercase tracking-[0.2em] text-rose-700">Pesanan berhasil dibuat</p>
-                <h1 class="mt-2 text-2xl font-extrabold tracking-tight text-slate-950">Nomor pesanan {{ $order->order_number }}</h1>
-                <p class="mt-3 text-sm text-slate-600">
-                    Status:
-                    <span class="font-bold {{ $order->status === 'paid' ? 'text-emerald-700' : ($order->status === 'failed' ? 'text-rose-700' : 'text-amber-700') }}">
-                        {{ match ($order->status) { 'paid' => 'Lunas', 'failed' => 'Pembayaran gagal', 'cancelled' => 'Dibatalkan', default => 'Menunggu pembayaran' } }}
-                    </span>
-                </p>
+                @if ($order->status === 'paid')
+                    <div class="text-center">
+                        <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                            <svg class="h-9 w-9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m5 12 4 4L19 6" />
+                            </svg>
+                        </div>
+                        <p class="mt-5 text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">Pembayaran berhasil</p>
+                        <h1 class="mt-2 text-2xl font-extrabold tracking-tight text-slate-950">Terima kasih, pesanan Anda telah dibayar</h1>
+                        <p class="mt-3 text-sm leading-6 text-slate-600">Pembayaran sudah terverifikasi. Pesanan <span class="font-semibold text-slate-900">{{ $order->order_number }}</span> sedang kami siapkan.</p>
+                        <p class="mt-4 text-2xl font-extrabold text-slate-950">Rp {{ number_format((float) $order->total, 0, ',', '.') }}</p>
+                        @if ($order->paid_at)
+                            <p class="mt-1 text-sm text-slate-500">Dibayar pada {{ $order->paid_at->timezone('Asia/Jakarta')->format('d/m/Y H:i') }} WIB</p>
+                        @endif
+                        <a href="{{ route('products.index') }}" class="mt-6 inline-flex rounded-xl bg-rose-700 px-5 py-3 text-sm font-bold text-white transition hover:bg-rose-800">Lanjut belanja</a>
+                    </div>
+                @else
+                    <p class="text-xs font-bold uppercase tracking-[0.2em] text-rose-700">Pesanan berhasil dibuat</p>
+                    <h1 class="mt-2 text-2xl font-extrabold tracking-tight text-slate-950">Nomor pesanan {{ $order->order_number }}</h1>
+                    <p class="mt-3 text-sm text-slate-600">
+                        Status:
+                        <span class="font-bold {{ $order->status === 'failed' ? 'text-rose-700' : 'text-amber-700' }}">
+                            {{ match ($order->status) { 'failed' => 'Pembayaran gagal', 'cancelled' => 'Dibatalkan', default => 'Menunggu pembayaran' } }}
+                        </span>
+                    </p>
+                @endif
 
                 @if ($order->status === 'pending')
                     @error('payment')
@@ -60,6 +78,12 @@
                             </li>
                         @endforeach
                     </ul>
+                    @if ($order->shipping_courier)
+                        <div class="mt-4 flex justify-between gap-4 border-t border-slate-100 pt-4 text-sm">
+                            <span class="text-slate-600">Ongkir {{ $order->shipping_courier }} {{ $order->shipping_service }}</span>
+                            <span class="shrink-0 font-semibold text-slate-900">Rp {{ number_format($order->shipping_fee, 0, ',', '.') }}</span>
+                        </div>
+                    @endif
                     <div class="mt-5 flex justify-between border-t border-slate-100 pt-4">
                         <span class="font-semibold text-slate-600">Total pesanan</span>
                         <span class="font-extrabold text-slate-950">Rp {{ number_format((float) $order->total, 0, ',', '.') }}</span>

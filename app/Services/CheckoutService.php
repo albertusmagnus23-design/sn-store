@@ -14,12 +14,18 @@ class CheckoutService
 {
     private const MAX_ORDER_TOTAL_IN_RUPIAH = 9_999_999_999_999;
 
+    public function __construct(private RajaOngkirShippingService $shippingService) {}
+
     /**
-     * @param  array{name: string, phone: string, email: string, address: string}  $customer
+     * @param  array<string, mixed>  $customer
      */
-    public function createPendingOrder(User $user, array $customer): Order
-    {
-        return DB::transaction(function () use ($user, $customer): Order {
+    public function createPendingOrder(
+        User $user,
+        array $customer,
+        ?string $shippingQuoteId = null,
+        ?string $shippingOptionId = null,
+    ): Order {
+        return DB::transaction(function () use ($user, $customer, $shippingQuoteId, $shippingOptionId): Order {
             $cartItems = $user->cartItems()->orderBy('id')->lockForUpdate()->get();
 
             if ($cartItems->isEmpty()) {
@@ -51,6 +57,30 @@ class CheckoutService
                 }
             }
 
+            $shippingOption = null;
+
+            if ($shippingQuoteId !== null && $shippingOptionId !== null) {
+                foreach ($cartItems as $cartItem) {
+                    $cartItem->setRelation('product', $products->get($cartItem->product_id));
+                }
+
+                $shippingOption = $this->shippingService->resolveOption(
+                    $user,
+                    $cartItems,
+                    [
+                        'district_code' => $customer['district_code'],
+                        'village_code' => $customer['village_code'],
+                        'postal_code' => $customer['postal_code'],
+                    ],
+                    $shippingQuoteId,
+                    $shippingOptionId,
+                );
+            } elseif ($shippingQuoteId !== null || $shippingOptionId !== null) {
+                throw ValidationException::withMessages([
+                    'shipping' => 'Kutipan ongkir tidak valid. Silakan hitung ulang ongkir.',
+                ]);
+            }
+
             $user->fill([
                 'name' => $customer['name'],
                 'phone' => $customer['phone'],
@@ -71,6 +101,9 @@ class CheckoutService
                 'customer_phone' => $customer['phone'],
                 'customer_email' => $customer['email'],
                 'customer_address' => $customer['address'],
+                'shipping_fee' => $shippingOption['cost'] ?? 0,
+                'shipping_courier' => $shippingOption['name'] ?? null,
+                'shipping_service' => $shippingOption['service'] ?? null,
                 'total' => '0.00',
                 'status' => Order::STATUS_PENDING,
             ]);
@@ -110,6 +143,15 @@ class CheckoutService
                 $product->increment('reserved_stock', $cartItem->quantity);
             }
 
+            $shippingFee = $shippingOption['cost'] ?? 0;
+
+            if ($shippingFee > self::MAX_ORDER_TOTAL_IN_RUPIAH - $totalInRupiah) {
+                throw ValidationException::withMessages([
+                    'shipping' => 'Total pesanan melebihi batas transaksi yang dapat diproses.',
+                ]);
+            }
+
+            $totalInRupiah += $shippingFee;
             $order->total = $this->formatRupiah($totalInRupiah);
             $order->save();
             $user->cartItems()->delete();

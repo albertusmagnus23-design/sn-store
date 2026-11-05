@@ -68,6 +68,7 @@ it('renders a product form with categories for an admin', function () {
         ->assertOk()
         ->assertSee('Tambah Produk')
         ->assertSee('Audio')
+        ->assertSee('name="weight_grams"', false)
         ->assertSee('enctype="multipart/form-data"', false);
 });
 
@@ -85,6 +86,7 @@ it('creates a product with its uploaded image stored locally', function () {
             'category_id' => $category->id,
             'price' => 12499000,
             'stock' => 24,
+            'weight_grams' => 850,
             'badge' => 'Terlaris',
             'image' => UploadedFile::fake()->image('headphones.png'),
             'image_path' => 'products/injected.png',
@@ -98,6 +100,7 @@ it('creates a product with its uploaded image stored locally', function () {
         ->and($product->category_id)->toBe($category->id)
         ->and($product->price)->toBe('12499000.00')
         ->and($product->stock)->toBe(24)
+        ->and($product->weight_grams)->toBe(850)
         ->and($product->badge)->toBe('Terlaris')
         ->and($product->image_path)->toStartWith('products/')
         ->and($product->image_path)->not->toBe('products/injected.png');
@@ -118,9 +121,10 @@ it('rejects invalid product fields and non-image uploads', function () {
             'category_id' => 999,
             'price' => -1,
             'stock' => -1,
+            'weight_grams' => 0,
             'image' => UploadedFile::fake()->create('document.txt', 10, 'text/plain'),
         ])
-        ->assertSessionHasErrors(['name', 'sku', 'category_id', 'price', 'stock', 'image']);
+        ->assertSessionHasErrors(['name', 'sku', 'category_id', 'price', 'stock', 'weight_grams', 'image']);
 
     expect(Product::query()->count())->toBe(0);
     Storage::disk('public')->assertDirectoryEmpty('products');
@@ -161,6 +165,7 @@ it('updates a product and replaces its local image', function () {
             'category_id' => $product->category_id,
             'price' => 899000,
             'stock' => 10,
+            'weight_grams' => 1200,
             'badge' => 'Baru',
             'image' => UploadedFile::fake()->image('new-image.png'),
         ])
@@ -172,6 +177,7 @@ it('updates a product and replaces its local image', function () {
     expect($product->name)->toBe('Updated Headphone')
         ->and($product->price)->toBe('899000.00')
         ->and($product->stock)->toBe(10)
+        ->and($product->weight_grams)->toBe(1200)
         ->and($product->badge)->toBe('Baru')
         ->and($product->image_path)->not->toBe('products/old-image.png');
 

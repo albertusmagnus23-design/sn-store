@@ -103,6 +103,15 @@
                 </div>
 
                 <div>
+                    <label for="product-weight" class="block text-sm font-semibold text-slate-700">Berat per produk (gram) <span class="text-rose-600">*</span></label>
+                    <input id="product-weight" name="weight_grams" type="number" required min="1" max="10000000" step="1" value="{{ old('weight_grams', $product->weight_grams) }}" placeholder="Contoh: 500" class="mt-2 w-full rounded-xl border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-rose-400 focus:ring-4 focus:ring-rose-100">
+                    <p class="mt-2 text-xs text-slate-500">Berat satu produk dalam gram; digunakan untuk menghitung ongkos kirim sesuai jumlah di keranjang.</p>
+                    @error('weight_grams')
+                        <p class="mt-2 text-sm text-rose-700">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
                     <label for="product-image" class="block text-sm font-semibold text-slate-700">
                         Gambar produk
                         @unless ($product->exists)

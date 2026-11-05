@@ -45,6 +45,25 @@ class MidtransService
                 }
 
                 $amount = $this->wholeRupiahAmount($lockedOrder);
+                $itemDetails = $lockedOrder->items->map(fn ($item): array => [
+                    'id' => $item->product_sku,
+                    'price' => (int) round((float) $item->unit_price),
+                    'quantity' => $item->quantity,
+                    'name' => mb_substr($item->product_name, 0, 50),
+                ])->all();
+
+                if ($lockedOrder->shipping_fee > 0) {
+                    $itemDetails[] = [
+                        'id' => 'shipping',
+                        'price' => $lockedOrder->shipping_fee,
+                        'quantity' => 1,
+                        'name' => mb_substr(
+                            'Ongkir '.$lockedOrder->shipping_courier.' '.$lockedOrder->shipping_service,
+                            0,
+                            50,
+                        ),
+                    ];
+                }
 
                 try {
                     $response = Http::withBasicAuth(config('services.midtrans.server_key'), '')
@@ -61,12 +80,7 @@ class MidtransService
                                 'email' => $lockedOrder->customer_email,
                                 'phone' => $lockedOrder->customer_phone,
                             ],
-                            'item_details' => $lockedOrder->items->map(fn ($item): array => [
-                                'id' => $item->product_sku,
-                                'price' => (int) round((float) $item->unit_price),
-                                'quantity' => $item->quantity,
-                                'name' => mb_substr($item->product_name, 0, 50),
-                            ])->all(),
+                            'item_details' => $itemDetails,
                             'expiry' => [
                                 'start_time' => now()->setTimezone('Asia/Jakarta')->format('Y-m-d H:i:s O'),
                                 'unit' => 'hour',
@@ -173,7 +187,7 @@ class MidtransService
                 abort(422, 'Midtrans notification does not confirm a successful payment.');
             }
 
-            if ($fraudStatus !== 'accept') {
+            if ($status === 'capture' && $fraudStatus !== 'accept') {
                 return;
             }
 

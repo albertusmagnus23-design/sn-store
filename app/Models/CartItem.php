@@ -25,4 +25,9 @@ class CartItem extends Model
     {
         return $this->belongsTo(Product::class);
     }
+
+    public function getLineTotalInRupiahAttribute(): int
+    {
+        return (int) round((float) $this->product->price, 0, PHP_ROUND_HALF_UP) * $this->quantity;
+    }
 }

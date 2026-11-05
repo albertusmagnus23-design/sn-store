@@ -1,11 +1,14 @@
 <?php
 
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\CheckoutRegionController;
+use App\Http\Controllers\CheckoutShippingController;
 use App\Http\Controllers\MidtransNotificationController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
@@ -18,9 +21,9 @@ Route::get('/products', [PublicProductController::class, 'index'])->name('produc
 Route::post('/cart/items/{product}', [CartController::class, 'store'])->middleware('auth')->name('cart.items.store');
 Route::post('/midtrans/notifications', MidtransNotificationController::class)->name('midtrans.notifications');
 
-Route::get('/dashboard', function () {
-    return view('pages.admin.dashboard.index');
-})->middleware(['auth', 'admin', 'verified'])->name('dashboard');
+Route::get('/dashboard', DashboardController::class)
+    ->middleware(['auth', 'admin', 'verified'])
+    ->name('dashboard');
 
 Route::middleware(['auth', 'admin', 'verified'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('categories', CategoryController::class)->except(['show']);
@@ -38,6 +41,12 @@ Route::middleware('auth')->group(function () {
     Route::delete('/cart/items/{cartItem}', [CartController::class, 'destroy'])->name('cart.items.destroy');
     Route::get('/checkout', [CheckoutController::class, 'create'])->name('checkout.create');
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+    Route::post('/checkout/shipping-options', CheckoutShippingController::class)
+        ->middleware('throttle:10,1')
+        ->name('checkout.shipping-options');
+    Route::get('/checkout/regions/{provinceCode}/cities', [CheckoutRegionController::class, 'cities'])->name('checkout.regions.cities');
+    Route::get('/checkout/regions/{cityCode}/districts', [CheckoutRegionController::class, 'districts'])->name('checkout.regions.districts');
+    Route::get('/checkout/regions/{districtCode}/villages', [CheckoutRegionController::class, 'villages'])->name('checkout.regions.villages');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
     Route::post('/orders/{order}/payment', [OrderController::class, 'pay'])->name('orders.payment');
     Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');

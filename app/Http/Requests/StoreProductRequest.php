@@ -27,6 +27,7 @@ class StoreProductRequest extends FormRequest
             'category_id' => ['required', 'integer', Rule::exists(Category::class, 'id')],
             'price' => ['required', 'numeric', 'decimal:0,2', 'min:0', 'max:9999999999.99'],
             'stock' => ['required', 'integer', 'min:0', 'max:4294967295'],
+            'weight_grams' => ['sometimes', 'required', 'integer', 'min:1', 'max:10000000'],
             'badge' => ['nullable', 'string', 'max:50'],
             'image' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ];

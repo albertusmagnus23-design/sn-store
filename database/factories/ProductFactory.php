@@ -24,6 +24,7 @@ class ProductFactory extends Factory
             'sku' => fake()->unique()->bothify('SN-???-###'),
             'price' => fake()->randomFloat(2, 1000, 10000000),
             'stock' => fake()->numberBetween(0, 100),
+            'weight_grams' => 1000,
             'badge' => null,
             'image_path' => null,
         ];

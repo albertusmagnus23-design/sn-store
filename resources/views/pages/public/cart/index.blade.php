@@ -50,7 +50,8 @@
                                 <div class="min-w-0 flex-1">
                                     <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">{{ $cartItem->product->category->name }}</p>
                                     <h2 class="mt-1 font-bold text-slate-900">{{ $cartItem->product->name }}</h2>
-                                    <p class="mt-1 text-sm text-slate-500">Rp {{ number_format((float) $cartItem->product->price, 0, ',', '.') }}</p>
+                                    <p class="mt-1 text-sm text-slate-500">Harga satuan: Rp {{ number_format((float) $cartItem->product->price, 0, ',', '.') }}</p>
+                                    <p class="mt-1 text-sm font-semibold text-slate-800">Subtotal produk: Rp {{ number_format($cartItem->line_total_in_rupiah, 0, ',', '.') }}</p>
                                     @if ($cartItem->product->available_stock < $cartItem->quantity)
                                         <p class="mt-2 text-xs font-medium text-rose-700">Stok tersedia berubah. Sesuaikan jumlah sebelum checkout.</p>
                                     @endif

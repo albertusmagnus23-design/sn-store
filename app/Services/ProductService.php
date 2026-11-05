@@ -58,7 +58,7 @@ class ProductService
 
     public function newProduct(): Product
     {
-        return new Product(['stock' => 0]);
+        return new Product(['stock' => 0, 'weight_grams' => 1000]);
     }
 
     /**

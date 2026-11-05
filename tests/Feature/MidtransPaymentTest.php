@@ -93,6 +93,45 @@ it('reuses an existing Midtrans payment session instead of creating duplicates',
     Http::assertSentCount(1);
 });
 
+it('includes the selected shipping fee in the Midtrans amount and item details', function () {
+    Http::preventStrayRequests();
+    Http::fake([
+        'app.sandbox.midtrans.com/snap/v1/transactions' => Http::response([
+            'token' => 'snap-token-with-shipping',
+            'redirect_url' => 'https://app.sandbox.midtrans.com/snap/v2/vtweb/snap-token-with-shipping',
+        ]),
+    ]);
+    $user = User::factory()->create();
+    $product = Product::factory()->create([
+        'price' => '10000.00',
+        'stock' => 2,
+    ]);
+    $user->cartItems()->create([
+        'product_id' => $product->id,
+        'quantity' => 2,
+    ]);
+    $order = app(CheckoutService::class)->createPendingOrder($user, [
+        'name' => $user->name,
+        'phone' => '+628123456789',
+        'email' => $user->email,
+        'address' => 'Alamat pembeli',
+    ]);
+    $order->forceFill([
+        'shipping_fee' => 15000,
+        'shipping_courier' => 'JNE',
+        'shipping_service' => 'REG',
+        'total' => '35000.00',
+    ])->save();
+
+    $this->actingAs($user)
+        ->post(route('orders.payment', $order))
+        ->assertRedirect('https://app.sandbox.midtrans.com/snap/v2/vtweb/snap-token-with-shipping');
+
+    Http::assertSent(fn (ClientRequest $request): bool => $request['transaction_details']['gross_amount'] === 35000
+        && $request['item_details'][1]['price'] === 15000
+        && $request['item_details'][1]['name'] === 'Ongkir JNE REG');
+});
+
 it('does not contact Midtrans when credentials are not configured', function () {
     Http::preventStrayRequests();
     Http::fake();
@@ -176,7 +215,6 @@ it('marks a paid order from a signed Midtrans notification and reduces stock exa
         'gross_amount' => '20000.00',
         'merchant_id' => 'TEST-MERCHANT',
         'transaction_status' => 'settlement',
-        'fraud_status' => 'accept',
         'transaction_id' => 'midtrans-transaction-123',
     ];
     $notification['signature_key'] = hash(
@@ -191,6 +229,12 @@ it('marks a paid order from a signed Midtrans notification and reduces stock exa
     expect($order->fresh()->payment_reference)->toBe('midtrans-transaction-123');
     expect($product->fresh()->stock)->toBe(3);
     expect($product->fresh()->reserved_stock)->toBe(0);
+
+    $this->actingAs($user)
+        ->get(route('orders.show', $order))
+        ->assertOk()
+        ->assertSee('Pembayaran berhasil')
+        ->assertSee('Pembayaran sudah terverifikasi.');
 });
 
 it('rejects a Midtrans notification with an invalid signature', function () {

@@ -22,7 +22,7 @@ class CartController extends Controller
 
         return view('pages.public.cart.index', [
             'cartItems' => $cartItems,
-            'cartTotal' => $cartItems->sum(fn (CartItem $item): float => (float) $item->product->price * $item->quantity),
+            'cartTotal' => $cartItems->sum('line_total_in_rupiah'),
             'cartItemCount' => $cartItems->sum('quantity'),
         ]);
     }

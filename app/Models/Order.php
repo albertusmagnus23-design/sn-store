@@ -15,6 +15,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'customer_email',
     'customer_address',
     'total',
+    'shipping_fee',
+    'shipping_courier',
+    'shipping_service',
     'status',
     'payment_reference',
     'payment_token',
@@ -35,6 +38,7 @@ class Order extends Model
     {
         return [
             'total' => 'decimal:2',
+            'shipping_fee' => 'integer',
             'paid_at' => 'datetime',
         ];
     }

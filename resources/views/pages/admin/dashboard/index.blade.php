@@ -28,7 +28,7 @@
                         Selamat datang kembali, {{ auth()->user()->name }}
                     </h2>
                     <p class="mt-3 max-w-xl text-sm leading-6 text-slate-300 sm:text-base">
-                        Semua yang kamu butuhkan untuk mengelola SN Store akan hadir di sini. Mulai dari katalog produk hingga transaksi pelanggan.
+                        Pantau kategori, produk, transaksi, dan pengguna SN Store dari satu tempat.
                     </p>
                 </div>
                 <a href="{{ route('home') }}" class="inline-flex shrink-0 items-center justify-center gap-2 self-start rounded-xl bg-white px-5 py-3 text-sm font-bold text-slate-900 shadow-sm transition hover:bg-rose-50 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-slate-900 lg:self-center">
@@ -64,7 +64,10 @@
                         </span>
                         <span class="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-emerald-700">Aktif</span>
                     </div>
-                    <h3 class="mt-5 text-base font-bold text-slate-900">Kategori</h3>
+                    <div class="mt-5 flex items-center justify-between gap-3">
+                        <h3 class="text-base font-bold text-slate-900">Kategori</h3>
+                        <span aria-label="Jumlah kategori" class="text-2xl font-extrabold tabular-nums text-slate-950">{{ number_format($categoryCount, 0, ',', '.') }}</span>
+                    </div>
                     <p class="mt-1.5 text-sm leading-5 text-slate-500">Kelompokkan produk agar lebih mudah ditemukan pelanggan.</p>
                 </a>
 
@@ -77,7 +80,10 @@
                         </span>
                         <span class="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-emerald-700">Aktif</span>
                     </div>
-                    <h3 class="mt-5 text-base font-bold text-slate-900">Produk</h3>
+                    <div class="mt-5 flex items-center justify-between gap-3">
+                        <h3 class="text-base font-bold text-slate-900">Produk</h3>
+                        <span aria-label="Jumlah produk" class="text-2xl font-extrabold tabular-nums text-slate-950">{{ number_format($productCount, 0, ',', '.') }}</span>
+                    </div>
                     <p class="mt-1.5 text-sm leading-5 text-slate-500">Atur katalog, harga, stok, dan informasi produk toko.</p>
                 </a>
 
@@ -90,7 +96,10 @@
                         </span>
                         <span class="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-emerald-700">Aktif</span>
                     </div>
-                    <h3 class="mt-5 text-base font-bold text-slate-900">Transaksi</h3>
+                    <div class="mt-5 flex items-center justify-between gap-3">
+                        <h3 class="text-base font-bold text-slate-900">Transaksi</h3>
+                        <span aria-label="Jumlah transaksi" class="text-2xl font-extrabold tabular-nums text-slate-950">{{ number_format($transactionCount, 0, ',', '.') }}</span>
+                    </div>
                     <p class="mt-1.5 text-sm leading-5 text-slate-500">Pantau pesanan pelanggan dan status pembayaran.</p>
                 </a>
 
@@ -103,7 +112,10 @@
                         </span>
                         <span class="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-emerald-700">Aktif</span>
                     </div>
-                    <h3 class="mt-5 text-base font-bold text-slate-900">User</h3>
+                    <div class="mt-5 flex items-center justify-between gap-3">
+                        <h3 class="text-base font-bold text-slate-900">User</h3>
+                        <span aria-label="Jumlah user" class="text-2xl font-extrabold tabular-nums text-slate-950">{{ number_format($userCount, 0, ',', '.') }}</span>
+                    </div>
                     <p class="mt-1.5 text-sm leading-5 text-slate-500">Kelola akun dan akses pengguna pada toko.</p>
                 </a>
             </div>

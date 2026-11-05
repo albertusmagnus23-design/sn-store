@@ -8,11 +8,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['category_id', 'name', 'sku', 'price', 'stock', 'reserved_stock', 'badge', 'image_path'])]
+#[Fillable(['category_id', 'name', 'sku', 'price', 'stock', 'reserved_stock', 'weight_grams', 'badge', 'image_path'])]
 class Product extends Model
 {
     /** @use HasFactory<ProductFactory> */
     use HasFactory;
+
+    protected $attributes = [
+        'weight_grams' => 1000,
+    ];
 
     /**
      * Get the category that owns the product.
@@ -33,6 +37,7 @@ class Product extends Model
             'price' => 'decimal:2',
             'stock' => 'integer',
             'reserved_stock' => 'integer',
+            'weight_grams' => 'integer',
         ];
     }
 
