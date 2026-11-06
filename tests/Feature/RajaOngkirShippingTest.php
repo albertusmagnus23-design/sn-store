@@ -4,7 +4,6 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Http\Client\Request as ClientRequest;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Laravolt\Indonesia\Models\City;
 use Laravolt\Indonesia\Models\District;
@@ -29,21 +28,8 @@ function seedRajaOngkirShippingRegions(): array
 
 function fakeRajaOngkirShippingResponses(): void
 {
-    Cache::forget('rajaongkir-origin-city:makassar-sulawesi-selatan');
     Http::preventStrayRequests();
     Http::fake([
-        'rajaongkir.komerce.id/api/v1/destination/province' => Http::response([
-            'data' => [[
-                'id' => 28,
-                'name' => 'Sulawesi Selatan',
-            ]],
-        ]),
-        'rajaongkir.komerce.id/api/v1/destination/city/28' => Http::response([
-            'data' => [[
-                'id' => 4321,
-                'city_name' => 'Makassar',
-            ]],
-        ]),
         'rajaongkir.komerce.id/api/v1/destination/domestic-destination*' => Http::response([
             'data' => [[
                 'id' => 7788,
@@ -81,6 +67,7 @@ function getRajaOngkirQuote(object $test, User $user, array $regions): array
 {
     config([
         'services.rajaongkir.api_key' => 'test-rajaongkir-key',
+        'services.rajaongkir.origin_id' => '4321',
     ]);
     fakeRajaOngkirShippingResponses();
 
@@ -93,6 +80,7 @@ function getRajaOngkirQuote(object $test, User $user, array $regions): array
 beforeEach(function () {
     config([
         'services.rajaongkir.api_key' => 'test-rajaongkir-key',
+        'services.rajaongkir.origin_id' => '4321',
     ]);
 });
 
@@ -140,8 +128,6 @@ test('shipping quotes use product weight, Makassar origin, and supported courier
 
     Http::assertSent(fn (ClientRequest $request): bool => str_contains($request->url(), '/destination/domestic-destination')
         && str_contains($request->url(), 'search=KECAMATAN%20UJI'));
-    Http::assertSent(fn (ClientRequest $request): bool => str_contains($request->url(), '/destination/province'));
-    Http::assertSent(fn (ClientRequest $request): bool => str_contains($request->url(), '/destination/city/28'));
     Http::assertSent(fn (ClientRequest $request): bool => str_contains($request->url(), '/calculate/domestic-cost')
         && (string) $request['origin'] === '4321'
         && $request['originType'] === 'city'
@@ -256,15 +242,8 @@ test('checkout rejects a quote after the cart weight changes', function () {
 });
 
 test('shipping quote reports provider failures instead of returning a zero-cost option', function () {
-    Cache::forget('rajaongkir-origin-city:makassar-sulawesi-selatan');
     Http::preventStrayRequests();
     Http::fake([
-        'rajaongkir.komerce.id/api/v1/destination/province' => Http::response([
-            'data' => [['id' => 28, 'name' => 'Sulawesi Selatan']],
-        ]),
-        'rajaongkir.komerce.id/api/v1/destination/city/28' => Http::response([
-            'data' => [['id' => 4321, 'city_name' => 'Makassar']],
-        ]),
         'rajaongkir.komerce.id/api/v1/destination/domestic-destination*' => Http::response([], 401),
     ]);
     $user = User::factory()->create();
@@ -279,15 +258,15 @@ test('shipping quote reports provider failures instead of returning a zero-cost 
         ->assertServiceUnavailable()
         ->assertJsonPath('message', 'Layanan ongkir sedang tidak tersedia. Coba lagi.');
 
-    Http::assertSentCount(3);
+    Http::assertSentCount(1);
 });
 
 test('shipping quotes do not call the provider when credentials are missing', function () {
-    Cache::forget('rajaongkir-origin-city:makassar-sulawesi-selatan');
     Http::preventStrayRequests();
     Http::fake();
     config([
         'services.rajaongkir.api_key' => null,
+        'services.rajaongkir.origin_id' => null,
     ]);
     $user = User::factory()->create();
     $product = Product::factory()->create();
@@ -304,19 +283,12 @@ test('shipping quotes do not call the provider when credentials are missing', fu
     Http::assertNothingSent();
 });
 
-test('shipping quotes fail explicitly when Makassar is missing from provider location data', function () {
-    Cache::forget('rajaongkir-origin-city:makassar-sulawesi-selatan');
+test('shipping quotes do not call the provider when the Makassar city id is missing', function () {
     Http::preventStrayRequests();
-    Http::fake([
-        'rajaongkir.komerce.id/api/v1/destination/province' => Http::response([
-            'data' => [['id' => 28, 'name' => 'Sulawesi Selatan']],
-        ]),
-        'rajaongkir.komerce.id/api/v1/destination/city/28' => Http::response([
-            'data' => [],
-        ]),
-    ]);
+    Http::fake();
     config([
         'services.rajaongkir.api_key' => 'test-rajaongkir-key',
+        'services.rajaongkir.origin_id' => null,
     ]);
     $user = User::factory()->create();
     $product = Product::factory()->create();
@@ -328,9 +300,9 @@ test('shipping quotes fail explicitly when Makassar is missing from provider loc
     $this->actingAs($user)
         ->postJson(route('checkout.shipping-options'), seedRajaOngkirShippingRegions())
         ->assertServiceUnavailable()
-        ->assertJsonPath('message', 'Kota Makassar tidak ditemukan pada data RajaOngkir.');
+        ->assertJsonPath('message', 'ID kota asal Makassar RajaOngkir belum dikonfigurasi. Isi RAJAONGKIR_ORIGIN_ID di environment aplikasi.');
 
-    Http::assertSentCount(2);
+    Http::assertNothingSent();
 });
 
 test('checkout requires a provider-issued shipping quote', function () {

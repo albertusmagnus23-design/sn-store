@@ -47,6 +47,7 @@ return [
 
     'rajaongkir' => [
         'api_key' => env('RAJAONGKIR_API_KEY'),
+        'origin_id' => env('RAJAONGKIR_ORIGIN_ID'),
         'base_url' => 'https://rajaongkir.komerce.id/api/v1',
     ],
 

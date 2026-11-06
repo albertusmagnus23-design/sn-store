@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Category;
 use App\Models\Product;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +15,121 @@ use RuntimeException;
 
 class ProductService
 {
+    /**
+     * @return list<array{
+     *     id: int,
+     *     nama: string,
+     *     sku: string,
+     *     harga: string,
+     *     stok: int,
+     *     berat_gram: int,
+     *     badge: ?string,
+     *     gambar: ?string,
+     *     created_at: ?string,
+     *     updated_at: ?string,
+     *     kategori: array{
+     *         id: int,
+     *         nama: string,
+     *         slug: string,
+     *         deskripsi: ?string,
+     *         created_at: ?string,
+     *         updated_at: ?string
+     *     }
+     * }>
+     */
+    public function getPublicProducts(?string $categorySlug = null): array
+    {
+        return Product::query()
+            ->with('category:id,name,slug,description,created_at,updated_at')
+            ->whereHas('category', fn (Builder $query) => $query
+                ->where('is_active', true)
+                ->when($categorySlug !== null, fn (Builder $query) => $query->where('slug', $categorySlug)))
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->get(['id', 'category_id', 'name', 'sku', 'price', 'stock', 'reserved_stock', 'weight_grams', 'badge', 'image_path', 'created_at', 'updated_at'])
+            ->map(fn (Product $product): array => $this->formatPublicProduct($product))
+            ->all();
+    }
+
+    /**
+     * @return array{
+     *     id: int,
+     *     nama: string,
+     *     sku: string,
+     *     harga: string,
+     *     stok: int,
+     *     berat_gram: int,
+     *     badge: ?string,
+     *     gambar: ?string,
+     *     created_at: ?string,
+     *     updated_at: ?string,
+     *     kategori: array{
+     *         id: int,
+     *         nama: string,
+     *         slug: string,
+     *         deskripsi: ?string,
+     *         created_at: ?string,
+     *         updated_at: ?string
+     *     }
+     * }|null
+     */
+    public function getPublicProduct(int $productId): ?array
+    {
+        $product = Product::query()
+            ->with('category:id,name,slug,description,created_at,updated_at')
+            ->whereHas('category', fn (Builder $query) => $query->where('is_active', true))
+            ->whereKey($productId)
+            ->first(['id', 'category_id', 'name', 'sku', 'price', 'stock', 'reserved_stock', 'weight_grams', 'badge', 'image_path', 'created_at', 'updated_at']);
+
+        return $product === null ? null : $this->formatPublicProduct($product);
+    }
+
+    /**
+     * @return array{
+     *     id: int,
+     *     nama: string,
+     *     sku: string,
+     *     harga: string,
+     *     stok: int,
+     *     berat_gram: int,
+     *     badge: ?string,
+     *     gambar: ?string,
+     *     created_at: ?string,
+     *     updated_at: ?string,
+     *     kategori: array{
+     *         id: int,
+     *         nama: string,
+     *         slug: string,
+     *         deskripsi: ?string,
+     *         created_at: ?string,
+     *         updated_at: ?string
+     *     }
+     * }
+     */
+    private function formatPublicProduct(Product $product): array
+    {
+        return [
+            'id' => $product->id,
+            'nama' => $product->name,
+            'sku' => $product->sku,
+            'harga' => $product->price,
+            'stok' => $product->available_stock,
+            'berat_gram' => $product->weight_grams,
+            'badge' => $product->badge,
+            'gambar' => $product->image_path === null ? null : asset('storage/'.$product->image_path),
+            'created_at' => $product->created_at?->toISOString(),
+            'updated_at' => $product->updated_at?->toISOString(),
+            'kategori' => [
+                'id' => $product->category->id,
+                'nama' => $product->category->name,
+                'slug' => $product->category->slug,
+                'deskripsi' => $product->category->description,
+                'created_at' => $product->category->created_at?->toISOString(),
+                'updated_at' => $product->category->updated_at?->toISOString(),
+            ],
+        ];
+    }
+
     /**
      * @return array{
      *     products: Collection<int, Product>,

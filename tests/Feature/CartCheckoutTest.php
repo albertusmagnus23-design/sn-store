@@ -6,7 +6,6 @@ use App\Models\Product;
 use App\Models\User;
 use App\Services\CheckoutService;
 use App\Services\OrderPaymentService;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Laravolt\Indonesia\Models\City;
 use Laravolt\Indonesia\Models\District;
@@ -37,6 +36,7 @@ function getCheckoutShippingPayload(object $test, User $user, array $region): ar
 
     config([
         'services.rajaongkir.api_key' => 'test-rajaongkir-key',
+        'services.rajaongkir.origin_id' => '4321',
     ]);
 
     $province = Province::query()->where('code', $region['province_code'])->firstOrFail();
@@ -44,14 +44,7 @@ function getCheckoutShippingPayload(object $test, User $user, array $region): ar
     $district = District::query()->where('code', $region['district_code'])->firstOrFail();
 
     Http::preventStrayRequests();
-    Cache::forget('rajaongkir-origin-city:makassar-sulawesi-selatan');
     Http::fake([
-        'rajaongkir.komerce.id/api/v1/destination/province' => Http::response([
-            'data' => [['id' => 28, 'name' => 'Sulawesi Selatan']],
-        ]),
-        'rajaongkir.komerce.id/api/v1/destination/city/28' => Http::response([
-            'data' => [['id' => 4321, 'city_name' => 'Makassar']],
-        ]),
         'rajaongkir.komerce.id/api/v1/destination/domestic-destination*' => Http::response([
             'data' => [[
                 'id' => 7788,
@@ -94,6 +87,11 @@ test('guest is redirected to login when adding a product to the cart', function 
     $this->assertDatabaseCount('cart_items', 0);
 });
 
+test('guest is redirected to login when viewing the cart', function () {
+    $this->get(route('cart.index'))
+        ->assertRedirect(route('login'));
+});
+
 test('authenticated user can add a product to cart and increase its quantity', function () {
     $user = User::factory()->create();
     $product = Product::factory()->create(['stock' => 5]);
@@ -111,6 +109,36 @@ test('authenticated user can add a product to cart and increase its quantity', f
         'product_id' => $product->id,
         'quantity' => 3,
     ]);
+});
+
+test('authenticated user sees only their own cart items', function () {
+    $user = User::factory()->create();
+    $otherUser = User::factory()->create();
+    $userProduct = Product::factory()->create([
+        'name' => 'Headphone Milik Saya',
+        'price' => '125000.00',
+        'stock' => 5,
+    ]);
+    $otherProduct = Product::factory()->create([
+        'name' => 'Laptop Pengguna Lain',
+        'price' => '250000.00',
+        'stock' => 5,
+    ]);
+    $user->cartItems()->create([
+        'product_id' => $userProduct->id,
+        'quantity' => 2,
+    ]);
+    $otherUser->cartItems()->create([
+        'product_id' => $otherProduct->id,
+        'quantity' => 1,
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('cart.index'))
+        ->assertOk()
+        ->assertSee('Headphone Milik Saya')
+        ->assertSee('Rp 250.000')
+        ->assertDontSee('Laptop Pengguna Lain');
 });
 
 test('product with no available stock cannot be added to cart', function () {

@@ -48,9 +48,8 @@ class RajaOngkirShippingService
         }
 
         $weightInGrams = $this->weightInGrams($cartItems);
-        $originCityId = $this->findOriginCityId();
         $destinationId = $this->findDestinationId($region);
-        $options = $this->calculateOptions($originCityId, $destinationId, $weightInGrams);
+        $options = $this->calculateOptions($destinationId, $weightInGrams);
 
         if ($options === []) {
             throw ValidationException::withMessages([
@@ -135,54 +134,6 @@ class RajaOngkirShippingService
         return $weightInGrams;
     }
 
-    private function findOriginCityId(): int
-    {
-        return Cache::remember('rajaongkir-origin-city:makassar-sulawesi-selatan', now()->addDay(), function (): int {
-            $provinces = $this->getLocationData('/destination/province', 'province lookup');
-            $provinceId = null;
-
-            foreach ($provinces as $province) {
-                if (! is_array($province)
-                    || $this->normalizeRegionName((string) ($province['name'] ?? $province['province_name'] ?? '')) !== 'SULAWESI SELATAN') {
-                    continue;
-                }
-
-                $provinceId = $this->numericLocationId($province['id'] ?? null);
-                break;
-            }
-
-            if ($provinceId === null) {
-                Log::warning('RajaOngkir origin province was not found.', [
-                    'province' => 'Sulawesi Selatan',
-                ]);
-
-                throw new RajaOngkirException('Provinsi Sulawesi Selatan tidak ditemukan pada data RajaOngkir.');
-            }
-
-            $cities = $this->getLocationData('/destination/city/'.$provinceId, 'origin city lookup');
-
-            foreach ($cities as $city) {
-                if (! is_array($city)
-                    || $this->normalizeRegionName((string) ($city['city_name'] ?? $city['name'] ?? '')) !== 'MAKASSAR') {
-                    continue;
-                }
-
-                $cityId = $this->numericLocationId($city['id'] ?? null);
-
-                if ($cityId !== null) {
-                    return $cityId;
-                }
-            }
-
-            Log::warning('RajaOngkir origin city was not found.', [
-                'province' => 'Sulawesi Selatan',
-                'city' => 'Makassar',
-            ]);
-
-            throw new RajaOngkirException('Kota Makassar tidak ditemukan pada data RajaOngkir.');
-        });
-    }
-
     /**
      * @param  array{province_code: string, city_code: string, district_code: string, village_code: string, postal_code: string}  $region
      */
@@ -192,6 +143,12 @@ class RajaOngkirShippingService
 
         if (! is_string($apiKey) || $apiKey === '') {
             throw new RajaOngkirException('RajaOngkir belum dikonfigurasi. Isi RAJAONGKIR_API_KEY di environment aplikasi.');
+        }
+
+        $originId = config('services.rajaongkir.origin_id');
+
+        if (! is_string($originId) || ! ctype_digit($originId) || (int) $originId < 1) {
+            throw new RajaOngkirException('ID kota asal Makassar RajaOngkir belum dikonfigurasi. Isi RAJAONGKIR_ORIGIN_ID di environment aplikasi.');
         }
 
         $province = Province::query()->where('code', $region['province_code'])->firstOrFail();
@@ -250,13 +207,13 @@ class RajaOngkirShippingService
     /**
      * @return array<string, array{option_id: string, code: string, name: string, service: string, description: string, cost: int, etd: string}>
      */
-    private function calculateOptions(int $originCityId, int $destinationId, int $weightInGrams): array
+    private function calculateOptions(int $destinationId, int $weightInGrams): array
     {
         try {
             $response = $this->request()
                 ->asForm()
                 ->post('/calculate/domestic-cost', [
-                    'origin' => $originCityId,
+                    'origin' => (int) config('services.rajaongkir.origin_id'),
                     'originType' => 'city',
                     'destination' => $destinationId,
                     'destinationType' => 'subdistrict',
@@ -329,26 +286,6 @@ class RajaOngkirShippingService
     /**
      * @return array<mixed>
      */
-    private function getLocationData(string $path, string $operation): array
-    {
-        try {
-            $response = $this->request()->get($path)->throw();
-        } catch (ConnectionException|RequestException $exception) {
-            Log::warning('RajaOngkir location lookup failed.', [
-                'operation' => $operation,
-                'http_status' => $exception instanceof RequestException ? $exception->response->status() : null,
-                'exception' => $exception::class,
-            ]);
-
-            throw new RajaOngkirException('Layanan ongkir sedang tidak tersedia. Coba lagi.', previous: $exception);
-        }
-
-        return $this->responseData($response, $operation);
-    }
-
-    /**
-     * @return array<mixed>
-     */
     private function responseData(Response $response, string $operation): array
     {
         $metaCode = $response->json('meta.code');
@@ -372,15 +309,6 @@ class RajaOngkirShippingService
         $normalized = preg_replace('/^(KOTA ADMINISTRASI|KOTA|KABUPATEN ADMINISTRASI|KABUPATEN|KAB\\.)\\s+/u', '', $normalized) ?? $normalized;
 
         return preg_replace('/\\s+/u', ' ', $normalized) ?? $normalized;
-    }
-
-    private function numericLocationId(mixed $id): ?int
-    {
-        if ((! is_int($id) && (! is_string($id) || ! ctype_digit($id))) || (int) $id < 1) {
-            return null;
-        }
-
-        return (int) $id;
     }
 
     /**
